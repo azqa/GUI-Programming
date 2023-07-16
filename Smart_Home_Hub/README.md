@@ -1,6 +1,5 @@
-# 437 Team 1 Project
+# Team Project
 
-Authors: Yusuf Siddiqui, Waleed Iqbal, Azqa Asad, Shianne Marbley
 Description: This is a React-based home automation app that allows you to control and monitor various devices and rooms.
 
 Prerequisites to Run App:
