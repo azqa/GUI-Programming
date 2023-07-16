@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seven Segment Digital Clock</title>
+    <style>
+        
+        canvas {
+            
+                background-color: #000;
+                top: 50%;
+                left: 50%;
+                border: #333 5px solid;
+                transform: translate(-50%, -50%);
+                position: fixed;
+                
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="750" height="200"></canvas>
+
+    <script>
+        
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        
+        //var to help seperate the digits (helps to space them out)
+        var offset = 0;
+        
+        //height double the width 
+        var height = 40;
+        var width = 20;
+
+        //arrays for each digit
+        var hour1 = [];
+        var hour2 = [];
+        var min1 = [];
+        var min2 = [];
+        var sec1 = [];
+        var sec2 = [];
+        var colons = [];
+
+        //width values
+        var x1 = width*2;
+        var x2 = width*4;
+        var x3 = width;
+
+        //height values
+        var y1 = height/3;
+        var y2 = height;
+        var y3 = height *2.5;
+        var y4 = height *3.5;
+        var y5 = height *2;
+
+
+        //code to draw the first number of the the hour (the first digit)
+        hour1.push(makeSegment(x1,y1,height,width));
+        hour1.push(makeSegment(x2,y2,width,height));
+        hour1.push(makeSegment(x2,y3,width,height));
+        hour1.push(makeSegment(x1,y4,height,width));
+        hour1.push(makeSegment(x3,y3,width,height));
+        hour1.push(makeSegment(x3,y2,width,height));
+        hour1.push(makeSegment(x1,y5,height,width));
+            
+        console.log(hour1);
+           
+        offset = width * 5;
+        //code to draw the second number of the the hour (the second digit)
+        hour2.push(makeSegment(x1+offset,y1,height,width));
+        hour2.push(makeSegment(x2+offset,y2,width,height));
+        hour2.push(makeSegment(x2+offset,y3,width,height));
+        hour2.push(makeSegment(x1+offset,y4,height,width));
+        hour2.push(makeSegment(x3+offset,y3,width,height));
+        hour2.push(makeSegment(x3+offset,y2,width,height));
+        hour2.push(makeSegment(x1+offset,y5,height,width));
+    
+        // colon :
+        offset = width * 7
+        //first colon
+        colons.push(makeSegment(x2 + offset, y2 +(height/2) , width, width));
+        colons.push(makeSegment(x2 + offset, y2 + (height*1.5), width, width));
+
+        //code to draw the first number of the the minutes (the third digit digit)
+        offset = width * 12;
+        min1.push(makeSegment(x1+offset,y1,height,width));
+        min1.push(makeSegment(x2+offset,y2,width,height));
+        min1.push(makeSegment(x2+offset,y3,width,height));
+        min1.push(makeSegment(x1+offset,y4,height,width));
+        min1.push(makeSegment(x3+offset,y3,width,height));
+        min1.push(makeSegment(x3+offset,y2,width,height));
+        min1.push(makeSegment(x1+offset,y5,height,width));
+
+
+        //code to draw the second number of the the minutes (the fourth digit)
+        offset = width * 17;
+        min2.push(makeSegment(x1+offset,y1,height,width));
+        min2.push(makeSegment(x2+offset,y2,width,height));
+        min2.push(makeSegment(x2+offset,y3,width,height));
+        min2.push(makeSegment(x1+offset,y4,height,width));
+        min2.push(makeSegment(x3+offset,y3,width,height));
+        min2.push(makeSegment(x3+offset,y2,width,height));
+        min2.push(makeSegment(x1+offset,y5,height,width));
+
+        // colon :
+        offset = width * 20;
+         //second colon
+        colons.push(makeSegment(x2 + offset, y2 +(height/2)  , width, width));
+        colons.push(makeSegment(x2 + offset, y2 + height*1.5, width, width));
+
+        //code to draw the first number of the the seconds (the fifth digit )
+        offset = width * 25;
+        sec1.push(makeSegment(x1+offset,y1,height,width));
+        sec1.push(makeSegment(x2+offset,y2,width,height));
+        sec1.push(makeSegment(x2+offset,y3,width,height));
+        sec1.push(makeSegment(x1+offset,y4,height,width));
+        sec1.push(makeSegment(x3+offset,y3,width,height));
+        sec1.push(makeSegment(x3+offset,y2,width,height));
+        sec1.push(makeSegment(x1+offset,y5,height,width));
+
+        //code to draw the second number of the the seconds (the sxith digit)
+        offset = width * 30;
+        sec2.push(makeSegment(x1+offset,y1,height,width));
+        sec2.push(makeSegment(x2+offset,y2,width,height));
+        sec2.push(makeSegment(x2+offset,y3,width,height));
+        sec2.push(makeSegment(x1+offset,y4,height,width));
+        sec2.push(makeSegment(x3+offset,y3,width,height));
+        sec2.push(makeSegment(x3+offset,y2,width,height));
+        sec2.push(makeSegment(x1+offset,y5,height,width));
+
+       runClock(ctx,hour1,hour2,min1,min2,sec1,sec2, colons);
+
+
+    async function runClock(context, hour1, hour2, min1, min2, sec1, sec2, colons) {
+
+        //this draws the two colons
+        setSegment(context, colons, -1);
+        
+        //updates clock every second
+        while (true) {
+            setTime(context, hour1,hour2,min1,min2,sec1,sec2);
+            await oneSec(1000);
+
+        }
+    }
+
+    function setTime(context, hour1, hour2, min1, min2, sec1, sec2) {
+
+        const now = new Date();
+        //converts time to a string so it can be indexed 
+        //lets you access the numbers individually
+        //if the number is a single digit then it fills in 0 at the front of it
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+        //stores the index into the correct variable
+        let realHour1 = hours[0];
+        let realHour2 = hours[1];
+        let realMin1 = minutes[0];
+        let realMin2 = minutes[1];
+        let realSec1 = seconds[0];
+        let realSec2 = seconds[1];
+
+
+        setSegment(context, hour1, realHour1);
+        setSegment(context, hour2, realHour2);
+        setSegment(context, min1, realMin1);
+        setSegment(context, min2, realMin2);
+        setSegment(context, sec1, realSec1);
+        setSegment(context, sec2, realSec2);
+        
+    }
+
+    //function that enables and disables the numbers
+    //turns them either gray or red 
+    function setSegment(context, segment, number) {
+        //gray
+        var offSegment = '#1e1e1e';
+        //red
+  	    var onSegment = '#ff0000';
+
+        
+        //for the colons they will always be red
+        if (number == -1) {
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+        }
+
+    
+
+        //if the time uses a 0 then it displays 0
+        else if(number == 0){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[6]);
+            
+        }
+            //if the time uses a 1 then it displays 1
+        else if(number == 1){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[6]);
+            
+        }
+
+            //if the time uses a 2 then it displays 2
+        else if(number == 2){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+            
+
+        }
+        //if the time uses a 3 then it displays 3
+        else if(number == 3){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+            
+
+        }
+        
+
+        //if the time uses a 4 then it displays 4
+        else if(number == 4){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+
+        }
+
+
+        //if the time uses a 5 then it displays 5
+        else if(number == 5){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+            
+
+        }
+
+        //if the time uses a 6 then it displays 6
+        else if(number == 6){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+
+        }
+
+         //if the time uses a 7 then it displays 7
+        else if(number == 7){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[6]);
+
+        }
+
+        //if the time uses a 8 then it displays 8
+        else if(number == 8){
+           
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+            
+        }
+
+        //if the time uses a 9 then it displays 9
+        else if(number == 9){
+            
+            context.stroke(segment[0]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[0]);
+
+            context.stroke(segment[1]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[1]);
+
+            context.stroke(segment[2]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[2]);
+
+            context.stroke(segment[3]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[3]);
+
+            context.stroke(segment[4]);
+            context.fillStyle = offSegment; 
+            context.fill(segment[4]);
+
+            context.stroke(segment[5]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[5]);
+
+            context.stroke(segment[6]);
+            context.fillStyle = onSegment; 
+            context.fill(segment[6]);
+
+        }
+    }
+
+
+    //draws the rectnagles for each segment
+    function makeSegment(x, y, width, height) {
+
+        let segment = new Path2D();
+        segment.rect(x, y, width, height);
+       return segment;
+
+    }
+
+    //lets the clock update every second 
+    function oneSec(time) {
+        return new Promise(run => setTimeout(run, time));
+    }
+
+    </script>
+
+</body>
+</html>
