@@ -1,6 +1,6 @@
 # GUI-Programming
 
-## Smart_Home_Hub
+## Smart_Home_Hub (Group Project)
 - A user-friendly react application that allows the user to add rooms and devices, and adjust the temperature of rooms as well as properties of devices.
 - The program uses local storage to save users entered rooms, devices, and their properties. 
 - Technology used: JS (React), CSS
